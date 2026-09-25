@@ -10,6 +10,7 @@ from a Linux PC over RS232, using plain ASCII commands from a bash script.
 | File           | Purpose                                                                 |
 | -------------- | ----------------------------------------------------------------------- |
 | `faulhaber.sh` | Demo: enables the drive, spins at 300 rpm for 5 s, reads speed and position, stops and disables. |
+| `positioning.sh` | Interactive demo: type an angle and the shaft moves there; reports landing error in encoder counts. Also has a repeatability test, a slow-vs-fast race and a speed-mode check. |
 | `diag.sh`      | Diagnostics: checks permissions, serial devices, USB adapter, kernel log, and prints the raw reply to `0VER`. |
 
 ## Requirements
@@ -81,6 +82,30 @@ PORT=/dev/ttyUSB1 ./faulhaber.sh
 > **Caution:** the demo spins the motor. Make sure it is mounted securely and
 > nothing is attached to the shaft that could cause harm.
 
+### Positioning demo
+
+Put a pointer or marker on the shaft and align it with 12 o'clock, then:
+
+```bash
+./positioning.sh
+```
+
+The current position becomes 0°. Type `help` in the script to see all commands. The main ones:
+
+| Input        | Effect                                                        |
+| ------------ | ------------------------------------------------------------- |
+| `90`, `-45`, `12.5` | Move to an absolute angle (motor-shaft degrees)        |
+| `r 30`       | Move 30° relative to the last target                          |
+| `repeat 10`  | 10 round trips 0° ↔ 180°, prints the worst landing error      |
+| `race`       | 10 turns slow (300 rpm) vs. fast (3000 rpm), compares time and error |
+| `spin 1500`  | Speed mode: compares set and measured rpm (`stop` to stop)    |
+| `speed`, `acc` | Change the positioning speed (rpm) and ramp (rev/s²)        |
+| `q`          | Quit: stops and disables the drive                            |
+
+The encoder resolution comes from the controller (`GENCRES`). If that command gets no reply, the script assumes 2048 counts/rev. You can set the value yourself, e.g. `CPR_OVERRIDE=2048 ./positioning.sh`.
+If the pointer turns counter-clockwise for positive angles, the clock
+positions are mirrored.
+
 ### Sending your own commands
 
 Each command is ASCII text terminated by a carriage return (`\r`), prefixed
@@ -94,6 +119,11 @@ with the node address. Commands used in the demo:
 | `0V300` | Run at 300 rpm (`0V0` stops) |
 | `0GN`   | Read actual speed        |
 | `0POS`  | Read actual position     |
+| `0HO`   | Set actual position to 0 |
+| `0LA2048` / `0LR512` | Load absolute / relative target (encoder counts) |
+| `0M`    | Start the loaded move    |
+| `0NP`   | Reply `p` when the target is reached |
+| `0SP1000` / `0AC100` / `0DEC100` | Max speed (rpm) / accel / decel (rev/s²) |
 
 See the Faulhaber MCDC3006 communication/command reference manual for the full
 command set.

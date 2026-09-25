@@ -17,9 +17,20 @@ send() {                             # send "<cmd>\r", print reply
 send 0VER       # version check
 send 0EN        # enable drive
 send 0V300      # run at 300 rpm
-sleep 5
+sleep 10
+send 0GN 	# run actual speed
+send 0V500	# run at 500 rpm
+sleep 10
+send 0GN	# read actual speed
+send 0V1000	# run at 1000 rpm
+sleep 10
+send 0GN 	# read actual speed
+send 0V2000 	# run at 2000 rpm
+sleep 10
+send 0GN 	# read actual speed
+send 0V3000	# run at 3000 rpm
+sleep 10
 send 0GN        # read actual speed
-send 0POS       # read actual position
 send 0V0        # stop
 send 0DI        # disable drive
 
